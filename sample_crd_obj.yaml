@@ -1,0 +1,6 @@
+apiVersion: "stable.example.com/v1"
+kind: NetworkInfo
+metadata:
+  name: my-new-network-info-object
+spec:
+  location: 1

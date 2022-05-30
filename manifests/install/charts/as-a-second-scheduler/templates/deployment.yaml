@@ -46,16 +46,16 @@ spec:
         - --leader-elect=false
         - --config=/etc/kubernetes/scheduler-config.yaml
         image: {{ .Values.scheduler.image }}
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 10251
-          initialDelaySeconds: 15
+        # livenessProbe:
+        #   httpGet:
+        #     path: /healthz
+        #     port: 10251
+        #   initialDelaySeconds: 15
         name: scheduler-plugins-scheduler
-        readinessProbe:
-          httpGet:
-            path: /healthz
-            port: 10251
+        # readinessProbe:
+        #   httpGet:
+        #     path: /healthz
+        #     port: 10251
         resources:
           requests:
             cpu: '0.1'

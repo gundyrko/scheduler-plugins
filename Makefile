@@ -16,7 +16,7 @@ ARCHS = amd64 arm64
 COMMONENVVAR=GOOS=$(shell uname -s | tr A-Z a-z)
 BUILDENVVAR=CGO_ENABLED=0
 
-LOCAL_REGISTRY=localhost:5000/scheduler-plugins
+LOCAL_REGISTRY=localhost:5001
 LOCAL_IMAGE=kube-scheduler:latest
 LOCAL_CONTROLLER_IMAGE=controller:latest
 
@@ -127,3 +127,8 @@ verify: update-vendor
 .PHONY: clean
 clean:
 	rm -rf ./bin
+
+.PHONY: printall
+printall:
+	echo $(VERSION)
+	echo $(RELEASE_VERSION)
