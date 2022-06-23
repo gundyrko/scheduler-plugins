@@ -24,8 +24,9 @@ LOCAL_CONTROLLER_IMAGE=controller:latest
 # into. The default is to push to the staging
 # registry, not production(k8s.gcr.io).
 RELEASE_REGISTRY?=gcr.io/k8s-staging-scheduler-plugins
-RELEASE_VERSION?=v$(shell date +%Y%m%d)-$(shell git describe --tags --match "v*")
 RELEASE_IMAGE:=kube-scheduler:$(RELEASE_VERSION)
+# RELEASE_VERSION?=v$(shell date +%Y%m%d)-$(shell git describe --tags --match "v*")
+RELEASE_VERSION?=v$(shell date +%Y%m%d)-v0.22.6-40-gccb3dee
 RELEASE_CONTROLLER_IMAGE:=controller:$(RELEASE_VERSION)
 
 # VERSION is the scheduler's version
@@ -73,8 +74,8 @@ build-scheduler.arm64v8: update-vendor
 
 .PHONY: local-image
 local-image: clean
-	docker build -f ./build/scheduler/Dockerfile --build-arg ARCH="amd64" --build-arg RELEASE_VERSION="$(RELEASE_VERSION)" -t $(LOCAL_REGISTRY)/$(LOCAL_IMAGE) .
-	docker build -f ./build/controller/Dockerfile --build-arg ARCH="amd64" -t $(LOCAL_REGISTRY)/$(LOCAL_CONTROLLER_IMAGE) .
+	docker build --no-cache -f ./build/scheduler/Dockerfile --build-arg ARCH="amd64" --build-arg RELEASE_VERSION="$(RELEASE_VERSION)" -t $(LOCAL_REGISTRY)/$(LOCAL_IMAGE) .
+	docker build --no-cache -f ./build/controller/Dockerfile --build-arg ARCH="amd64" -t $(LOCAL_REGISTRY)/$(LOCAL_CONTROLLER_IMAGE) .
 
 .PHONY: release-image.amd64
 release-image.amd64: clean
