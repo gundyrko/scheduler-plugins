@@ -6,9 +6,11 @@ import (
 	"math/rand"
 
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
 	"sigs.k8s.io/scheduler-plugins/pkg/util"
@@ -34,38 +36,48 @@ func (k *KubeEdge5GScorer) Score(ctx context.Context, state *framework.CycleStat
 	// clientset := k.handle.ClientSet()
 	// client := clientset.AppsV1().RESTClient()
 
-	kubeconfig := "/kube/config"
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	// kubeconfig := "/kube/config"
+	// config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	// creates the in-cluster config
+	config, err := rest.InClusterConfig()
 	if err != nil {
-		klog.Error(err)
-		return 0, framework.AsStatus(fmt.Errorf("1. getting custom resource for node %q: %w", nodeName, err))
+		panic(err.Error())
 	}
 
 	client, err := dynamic.NewForConfig(config)
 	if err != nil {
 		klog.Error(err)
-		return 0, framework.AsStatus(fmt.Errorf("1. getting custom resource for node %q: %w", nodeName, err))
-	}
-	createData := `
-	apiVersion: "stable.example.com/v1"
-	kind: CronTab
-	metadata:
-	  name: cron-4
-	spec:
-	  cronSpec: "* * * * */15"
-	  image: my-awesome-cron-image-4
-	`
-	ct, err := util.CreateCrontabWithYaml(client, "default", createData)
-	if err != nil {
-		klog.Error(err)
 		return 0, framework.AsStatus(fmt.Errorf("2. getting custom resource for node %q: %w", nodeName, err))
 	}
-	fmt.Printf("%s %s %s %s\n", ct.Namespace, ct.Name, ct.Spec.CronSpec, ct.Spec.Image)
+
+	clientset, err := kubernetes.NewForConfig(config)
+
+	pods, err := clientset.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		panic(err.Error())
+	}
+	fmt.Printf("There are %d pods in the cluster\n", len(pods.Items))
+
+	// 	createData := `
+	// apiVersion: "stable.example.com/v1"
+	// kind: CronTab
+	// metadata:
+	//   name: cron-4
+	// spec:
+	//   cronSpec: "* * * * */15"
+	//   image: my-awesome-cron-image-4
+	// `
+	// ct, err := util.CreateCrontabWithYaml(client, "default", createData)
+	// if err != nil {
+	// 	klog.Error(err)
+	// 	return 0, framework.AsStatus(fmt.Errorf("3. getting custom resource for node %q: %w", nodeName, err))
+	// }
+	// fmt.Printf("%s %s %s %s\n", ct.Namespace, ct.Name, ct.Spec.CronSpec, ct.Spec.Image)
 
 	list, err := util.ListCrontabs(client, "default")
 	if err != nil {
 		klog.Error(err)
-		return 0, framework.AsStatus(fmt.Errorf("3. getting custom resource for node %q: %w", nodeName, err))
+		return 0, framework.AsStatus(fmt.Errorf("4. getting custom resource for node %q: %w", nodeName, err))
 	}
 	for _, t := range list.Items {
 		klog.Info("%s %s %s %s\n", t.Namespace, t.Name, t.Spec.CronSpec, t.Spec.Image)
