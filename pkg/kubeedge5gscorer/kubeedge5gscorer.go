@@ -57,37 +57,40 @@ func (k *KubeEdge5GScorer) Score(ctx context.Context, state *framework.CycleStat
 	//   location: 43
 	// `
 	// 	ct, err := util.CreateNetworkInfoWithYaml(client, "scheduler-plugins", createData)
-
+	namespace := "scheduler-plugins"
 	info := &util.NetworkInfo{}
 	info.APIVersion = "crd.k8s5g.com/v1"
 	info.Kind = "NetworkInfo"
-	info.Name = "test-info"
+	info.Name = "test-info-" + nodeName
 	info.Spec.Location = rand.Int() % 100
-	ct, err := util.CreateNetworkInfo(client, "scheduler-plugins", info)
+	ct, err := util.CreateNetworkInfo(client, namespace, info)
 	if err != nil {
-		ct, err = util.UpdateNetworkInfo(client, "scheduler-plugins", info)
+		ct, err = util.UpdateNetworkInfo(client, namespace, info)
 		if err != nil {
-			klog.Error(err)
+			klog.Error(err, " when updating for node:", nodeName, ", pod:", p.Name)
 			// return 0, framework.AsStatus(fmt.Errorf("creating custom resource for node %q: %w", nodeName, err))
 		}
 	}
 	if err == nil {
-		klog.Info("creating/updateing", ct.Namespace, ct.Name, ct.Spec.Location)
+		klog.Info("created/updated for node:", nodeName, ", pod:", p.Name, " in namespace: ", ct.Namespace, "crd name: ", ct.Name, ", Val: ", ct.Spec.Location)
 	}
-	list, err := util.ListNetworkInfos(client, "scheduler-plugins")
+	list, err := util.ListNetworkInfos(client, namespace)
+	if err != nil {
+		klog.Error(err)
+		return 0, framework.AsStatus(fmt.Errorf("listing custom resources for node %q: %w", nodeName, err))
+	}
+	for _, t := range list.Items {
+		klog.Info("getting location for all nodes:", nodeName, ", pod:", p.Name, " in namespace: ", t.Namespace, "crd name: ", t.Name, ", Val: ", t.Spec.Location)
+	}
+
+	newInfo, err := util.GetNetworkInfo(client, namespace, info.Name)
 	if err != nil {
 		klog.Error(err)
 		return 0, framework.AsStatus(fmt.Errorf("getting custom resources for node %q: %w", nodeName, err))
 	}
-	loc := 0
-	for _, t := range list.Items {
-		loc = t.Spec.Location
-		klog.Info("getting", t.Namespace, t.Name, t.Spec.Location)
-	}
-
 	klog.InfoS("====Get success====")
 	// klog.Info(data)
-	score := loc
+	score := newInfo.Spec.Location
 	klog.Infof("====Score = %d====", score)
 	return int64(score), nil
 }

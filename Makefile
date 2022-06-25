@@ -19,6 +19,7 @@ BUILDENVVAR=CGO_ENABLED=0
 LOCAL_REGISTRY=localhost:5001
 LOCAL_IMAGE=kube-scheduler:latest
 LOCAL_CONTROLLER_IMAGE=controller:latest
+LOCAL_APP_EDGE_IMAGE=appedge:latest
 
 # RELEASE_REGISTRY is the container registry to push
 # into. The default is to push to the staging
@@ -48,6 +49,18 @@ build.amd64: build-controller.amd64 build-scheduler.amd64
 .PHONY: build.arm64v8
 build.arm64v8: build-controller.arm64v8 build-scheduler.arm64v8
 
+.PHONY: build-appedge
+build-appedge: update-vendor
+	$(COMMONENVVAR) $(BUILDENVVAR) go build -ldflags '-w' -o bin/appedge apps/edge/appedge.go
+
+.PHONY: build-appedge.amd64
+build-appedge.amd64: update-vendor
+	$(COMMONENVVAR) $(BUILDENVVAR) GOARCH=amd64 go build -ldflags '-w' -o bin/appedge apps/edge/appedge.go
+
+.PHONY: build-appedge.arm64v8
+build-appedge.arm64v8: update-vendor
+	GOOS=linux $(BUILDENVVAR) GOARCH=arm64 go build -ldflags '-w' -o bin/appedge apps/edge/appedge.go
+
 .PHONY: build-controller
 build-controller: update-vendor
 	$(COMMONENVVAR) $(BUILDENVVAR) go build -ldflags '-w' -o bin/controller cmd/controller/controller.go
@@ -76,6 +89,7 @@ build-scheduler.arm64v8: update-vendor
 local-image: clean
 	docker build --no-cache -f ./build/scheduler/Dockerfile --build-arg ARCH="amd64" --build-arg RELEASE_VERSION="$(RELEASE_VERSION)" -t $(LOCAL_REGISTRY)/$(LOCAL_IMAGE) .
 	docker build --no-cache -f ./build/controller/Dockerfile --build-arg ARCH="amd64" -t $(LOCAL_REGISTRY)/$(LOCAL_CONTROLLER_IMAGE) .
+	docker build --no-cache -f ./build/appedge/Dockerfile --build-arg ARCH="amd64" -t $(LOCAL_REGISTRY)/$(LOCAL_APP_EDGE_IMAGE) .
 
 .PHONY: release-image.amd64
 release-image.amd64: clean

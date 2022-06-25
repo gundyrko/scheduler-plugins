@@ -8,5 +8,6 @@ spec:
   schedulerName: scheduler-plugins-scheduler
   containers:
   - name: pod-with-second-annotation-container
-    image: k8s.gcr.io/pause:2.0
-
+    image: localhost:5001/appedge
+    ports:
+    - containerPort: 8080
