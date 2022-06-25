@@ -24,66 +24,64 @@ func getClient() dynamic.Interface {
 	return client
 }
 
-func TestCreateCrontabWithYaml(t *testing.T) {
+func TestCreateNetworkInfoWithYaml(t *testing.T) {
 	client := getClient()
 	createData := `
-apiVersion: "stable.example.com/v1"
-kind: CronTab
+apiVersion: "crd.k8s5g.com/v1"
+kind: NetworkInfo
 metadata:
-  name: cron-4
+  name: test-info
 spec:
-  cronSpec: "* * * * */15"
-  image: my-awesome-cron-image-4
+  location: 43
 `
-	ct, err := CreateCrontabWithYaml(client, "default", createData)
+	ct, err := CreateNetworkInfoWithYaml(client, "scheduler-plugins", createData)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%s %s %s %s\n", ct.Namespace, ct.Name, ct.Spec.CronSpec, ct.Spec.Image)
+	fmt.Printf("%s %s %d\n", ct.Namespace, ct.Name, ct.Spec.Location)
 }
 
-func TestListCrontabs(t *testing.T) {
+func TestListNetworkInfos(t *testing.T) {
 	client := getClient()
-	list, err := ListCrontabs(client, "default")
+	list, err := ListNetworkInfos(client, "scheduler-plugins")
 	if err != nil {
 		panic(err)
 	}
 	for _, t := range list.Items {
-		fmt.Printf("%s %s %s %s\n", t.Namespace, t.Name, t.Spec.CronSpec, t.Spec.Image)
+		fmt.Printf("%s %s %d\n", t.Namespace, t.Name, t.Spec.Location)
 	}
 }
 
-func TestGetCrontab(t *testing.T) {
+func TestGetNetworkInfo(t *testing.T) {
 	client := getClient()
-	ct, err := GetCrontab(client, "default", "cron-4")
+	ct, err := GetNetworkInfo(client, "scheduler-plugins", "test-info")
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%s %s %s %s\n", ct.Namespace, ct.Name, ct.Spec.CronSpec, ct.Spec.Image)
+	fmt.Printf("%s %s %d\n", ct.Namespace, ct.Name, ct.Spec.Location)
 }
 
-func TestUpdateCrontabWithYaml(t *testing.T) {
+func TestUpdateNetworkInfoWithYaml(t *testing.T) {
 	client := getClient()
 	updateData := `
 apiVersion: "stable.example.com/v1"
-kind: CronTab
+kind: NetworkInfo
 metadata:
-  name: cron-4
+  name: test-info
 spec:
-  cronSpec: "* * * * */8"
-  image: my-awesome-cron-image-4-update
+  location: 47
 `
-	ct, err := UpdateCrontabWithYaml(client, "default", updateData)
+	ct, err := UpdateNetworkInfoWithYaml(client, "scheduler-plugins", updateData)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%s %s %s %s\n", ct.Namespace, ct.Name, ct.Spec.CronSpec, ct.Spec.Image)
+	fmt.Printf("%s %s %d\n", ct.Namespace, ct.Name, ct.Spec.Location)
 
 }
 
-func TestDeleteCrontab(t *testing.T) {
+func TestDeleteNetworkInfo(t *testing.T) {
 	client := getClient()
-	if err := DeleteCrontab(client, "default", "cron-4"); err != nil {
+	if err := DeleteNetworkInfo(client, "scheduler-plugins", "test-info"); err != nil {
 		panic(err)
 	}
 }

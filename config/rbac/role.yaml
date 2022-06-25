@@ -19,9 +19,9 @@ rules:
   - update
   - watch
 - apiGroups:
-  - stable.example.com
+  - crd.k8s5g.com
   resources:
-  - crontabs
+  - networkinfos
   verbs:
   - create
   - delete

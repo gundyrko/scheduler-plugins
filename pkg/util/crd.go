@@ -13,31 +13,30 @@ import (
 )
 
 var gvr = schema.GroupVersionResource{
-	Group:    "stable.example.com",
+	Group:    "crd.k8s5g.com",
 	Version:  "v1",
-	Resource: "crontabs",
+	Resource: "networkinfos",
 }
 
-type CrontabSpec struct {
-	CronSpec string `json:"cronSpec"`
-	Image    string `json:"image"`
+type NetworkInfoSpec struct {
+	Location int `json:"location"`
 }
 
-type Crontab struct {
+type NetworkInfo struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec CrontabSpec `json:"spec,omitempty"`
+	Spec NetworkInfoSpec `json:"spec,omitempty"`
 }
 
-type CrontabList struct {
+type NetworkInfoList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 
-	Items []Crontab `json:"items"`
+	Items []NetworkInfo `json:"items"`
 }
 
-func ListCrontabs(client dynamic.Interface, namespace string) (*CrontabList, error) {
+func ListNetworkInfos(client dynamic.Interface, namespace string) (*NetworkInfoList, error) {
 	list, err := client.Resource(gvr).Namespace(namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
@@ -46,14 +45,14 @@ func ListCrontabs(client dynamic.Interface, namespace string) (*CrontabList, err
 	if err != nil {
 		return nil, err
 	}
-	var ctList CrontabList
+	var ctList NetworkInfoList
 	if err := json.Unmarshal(data, &ctList); err != nil {
 		return nil, err
 	}
 	return &ctList, nil
 }
 
-func GetCrontab(client dynamic.Interface, namespace string, name string) (*Crontab, error) {
+func GetNetworkInfo(client dynamic.Interface, namespace string, name string) (*NetworkInfo, error) {
 	utd, err := client.Resource(gvr).Namespace(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
@@ -62,20 +61,38 @@ func GetCrontab(client dynamic.Interface, namespace string, name string) (*Cront
 	if err != nil {
 		return nil, err
 	}
-	var ct Crontab
+	var ct NetworkInfo
 	if err := json.Unmarshal(data, &ct); err != nil {
 		return nil, err
 	}
 	return &ct, nil
 }
 
-func CreateCrontabWithYaml(client dynamic.Interface, namespace string, yamlData string) (*Crontab, error) {
+func CreateNetworkInfoWithYaml(client dynamic.Interface, namespace string, yamlData string) (*NetworkInfo, error) {
 	decoder := yaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
 	obj := &unstructured.Unstructured{}
 	if _, _, err := decoder.Decode([]byte(yamlData), nil, obj); err != nil {
 		return nil, err
 	}
 
+	return createNetworkInfoWithUnstructured(client, namespace, obj)
+}
+
+func CreateNetworkInfo(client dynamic.Interface, namespace string, info *NetworkInfo) (*NetworkInfo, error) {
+	decoder := yaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
+	obj := &unstructured.Unstructured{}
+	byteSlice, err := json.Marshal(info)
+	if err != nil {
+		return nil, err
+	}
+	if _, _, err := decoder.Decode(byteSlice, nil, obj); err != nil {
+		return nil, err
+	}
+
+	return createNetworkInfoWithUnstructured(client, namespace, obj)
+}
+
+func createNetworkInfoWithUnstructured(client dynamic.Interface, namespace string, obj *unstructured.Unstructured) (*NetworkInfo, error) {
 	utd, err := client.Resource(gvr).Namespace(namespace).Create(context.TODO(), obj, metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
@@ -84,19 +101,37 @@ func CreateCrontabWithYaml(client dynamic.Interface, namespace string, yamlData 
 	if err != nil {
 		return nil, err
 	}
-	var ct Crontab
+	var ct NetworkInfo
 	if err := json.Unmarshal(data, &ct); err != nil {
 		return nil, err
 	}
 	return &ct, nil
 }
 
-func UpdateCrontabWithYaml(client dynamic.Interface, namespace string, yamlData string) (*Crontab, error) {
+func UpdateNetworkInfo(client dynamic.Interface, namespace string, info *NetworkInfo) (*NetworkInfo, error) {
+	decoder := yaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
+	obj := &unstructured.Unstructured{}
+	byteSlice, err := json.Marshal(info)
+	if err != nil {
+		return nil, err
+	}
+	if _, _, err := decoder.Decode(byteSlice, nil, obj); err != nil {
+		return nil, err
+	}
+
+	return updateNetworkInfoWithUnstructured(client, namespace, obj)
+}
+
+func UpdateNetworkInfoWithYaml(client dynamic.Interface, namespace string, yamlData string) (*NetworkInfo, error) {
 	decoder := yaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
 	obj := &unstructured.Unstructured{}
 	if _, _, err := decoder.Decode([]byte(yamlData), nil, obj); err != nil {
 		return nil, err
 	}
+	return updateNetworkInfoWithUnstructured(client, namespace, obj)
+}
+
+func updateNetworkInfoWithUnstructured(client dynamic.Interface, namespace string, obj *unstructured.Unstructured) (*NetworkInfo, error) {
 	name := obj.GetName()
 	utd, err := client.Resource(gvr).Namespace(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
@@ -112,18 +147,18 @@ func UpdateCrontabWithYaml(client dynamic.Interface, namespace string, yamlData 
 	if err != nil {
 		return nil, err
 	}
-	var ct Crontab
+	var ct NetworkInfo
 	if err := json.Unmarshal(data, &ct); err != nil {
 		return nil, err
 	}
 	return &ct, nil
 }
 
-func PatchCrontab(client dynamic.Interface, namespace, name string, pt types.PatchType, data []byte) error {
+func PatchNetworkInfo(client dynamic.Interface, namespace, name string, pt types.PatchType, data []byte) error {
 	_, err := client.Resource(gvr).Namespace(namespace).Patch(context.TODO(), name, pt, data, metav1.PatchOptions{})
 	return err
 }
 
-func DeleteCrontab(client dynamic.Interface, namespace string, name string) error {
+func DeleteNetworkInfo(client dynamic.Interface, namespace string, name string) error {
 	return client.Resource(gvr).Namespace(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
 }
