@@ -9,5 +9,5 @@ spec:
   containers:
   - name: pod-with-second-annotation-container
     image: localhost:5002/appedge
-    # ports:
-    # - containerPort: 8080
+    ports:
+    - containerPort: 8080

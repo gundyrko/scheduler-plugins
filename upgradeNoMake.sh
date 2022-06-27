@@ -11,4 +11,5 @@ sudo kubectl apply -f ./config/rbac/role.yaml
 sudo kubectl apply -f ./config/rbac/role_binding.yaml
 sudo kubectl apply -f config/rbac/app_proxy_service.yaml
 sudo kubectl apply -f sample_pod_deployment.yaml
+# sudo kubectl apply -f sample_pod.yaml
 sudo kubectl get pods -n scheduler-plugins
