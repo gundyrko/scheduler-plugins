@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: appedge-deployment
+  labels:
+    app: multischeduler-example
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: multischeduler-example
+  template:
+    metadata:
+      labels:
+        app: multischeduler-example
+    spec:
+      schedulerName: scheduler-plugins-scheduler
+      containers:
+      - name: pod-with-second-annotation-scheduler
+        image: localhost:5002/appedge
+        ports:
+        - containerPort: 8080
+  
