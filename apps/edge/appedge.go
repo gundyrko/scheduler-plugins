@@ -25,7 +25,7 @@ func main() {
 		p := prime.SieveOfEratosthenes(reqNum)
 		fmt.Println("Prime number: ", len(p))
 		fmt.Fprintf(w, "Number of primes: %d", len(p))
-
+		//  := r.Header["ResponseMB"]
 	})
 	http.ListenAndServe(":8080", nil)
 }
