@@ -17,5 +17,5 @@ spec:
       schedulerName: scheduler-plugins-scheduler
       containers:
       - name: pod-with-second-annotation-scheduler
-        image: localhost:5002/appedge
+        image: localhost:5001/appedge
   

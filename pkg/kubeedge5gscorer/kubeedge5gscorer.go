@@ -28,8 +28,8 @@ func (k *KubeEdge5GScorer) Name() string {
 
 func (k *KubeEdge5GScorer) Score(ctx context.Context, state *framework.CycleState, p *v1.Pod, nodeName string) (int64, *framework.Status) {
 	// TODO: use framework handle get CR and calculate score
-	klog.InfoS("====KubeEdge5GScorer starts -v2====")
-	klog.InfoS("====Try to get custom resource object====")
+	// klog.InfoS("====KubeEdge5GScorer starts -v2====")
+	// klog.InfoS("====Try to get custom resource object====")
 
 	// clientset := k.handle.ClientSet()
 	// client := clientset.AppsV1().RESTClient()
@@ -63,35 +63,35 @@ func (k *KubeEdge5GScorer) Score(ctx context.Context, state *framework.CycleStat
 	info.Kind = "NetworkInfo"
 	info.Name = "test-info-" + nodeName
 	info.Spec.Location = rand.Int() % 100
-	ct, err := util.CreateNetworkInfo(client, namespace, info)
+	_, err = util.CreateNetworkInfo(client, namespace, info)
 	if err != nil {
-		ct, err = util.UpdateNetworkInfo(client, namespace, info)
+		_, err = util.UpdateNetworkInfo(client, namespace, info)
 		if err != nil {
 			klog.Error(err, " when updating for node:", nodeName, ", pod:", p.Name)
 			// return 0, framework.AsStatus(fmt.Errorf("creating custom resource for node %q: %w", nodeName, err))
 		}
 	}
-	if err == nil {
-		klog.Info("created/updated for node:", nodeName, ", pod:", p.Name, " in namespace: ", ct.Namespace, "crd name: ", ct.Name, ", Val: ", ct.Spec.Location)
-	}
-	list, err := util.ListNetworkInfos(client, namespace)
-	if err != nil {
-		klog.Error(err)
-		return 0, framework.AsStatus(fmt.Errorf("listing custom resources for node %q: %w", nodeName, err))
-	}
-	for _, t := range list.Items {
-		klog.Info("getting location for all nodes:", nodeName, ", pod:", p.Name, " in namespace: ", t.Namespace, "crd name: ", t.Name, ", Val: ", t.Spec.Location)
-	}
+	// if err == nil {
+	// 	klog.Info("created/updated for node:", nodeName, ", pod:", p.Name, " in namespace: ", ct.Namespace, "crd name: ", ct.Name, ", Val: ", ct.Spec.Location)
+	// }
+	// list, err := util.ListNetworkInfos(client, namespace)
+	// if err != nil {
+	// 	klog.Error(err)
+	// 	return 0, framework.AsStatus(fmt.Errorf("listing custom resources for node %q: %w", nodeName, err))
+	// }
+	// for _, t := range list.Items {
+	// 	klog.Info("getting location for all nodes:", nodeName, ", pod:", p.Name, " in namespace: ", t.Namespace, "crd name: ", t.Name, ", Val: ", t.Spec.Location)
+	// }
 
 	newInfo, err := util.GetNetworkInfo(client, namespace, info.Name)
 	if err != nil {
 		klog.Error(err)
 		return 0, framework.AsStatus(fmt.Errorf("getting custom resources for node %q: %w", nodeName, err))
 	}
-	klog.InfoS("====Get success====")
+	// klog.InfoS("====Get success====")
 	// klog.Info(data)
 	score := newInfo.Spec.Location
-	klog.Infof("====Score = %d====", score)
+	klog.Infof("Scheduling pod %q: node %q has score %d", p.Name, nodeName, score)
 	return int64(score), nil
 }
 

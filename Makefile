@@ -16,7 +16,7 @@ ARCHS = amd64 arm64
 COMMONENVVAR=GOOS=$(shell uname -s | tr A-Z a-z)
 BUILDENVVAR=CGO_ENABLED=0
 
-LOCAL_REGISTRY=localhost:5002
+LOCAL_REGISTRY=localhost:5001
 LOCAL_IMAGE=kube-scheduler:latest
 LOCAL_CONTROLLER_IMAGE=controller:latest
 LOCAL_APP_EDGE_IMAGE=appedge:latest

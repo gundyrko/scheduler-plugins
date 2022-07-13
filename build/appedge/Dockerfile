@@ -17,7 +17,7 @@ FROM golang:1.17.6
 WORKDIR /go/src/sigs.k8s.io/scheduler-plugins
 COPY . .
 ARG ARCH
-RUN GOPROXY="https://goproxy.io" make build-appedge.$ARCH
+RUN make build-appedge.$ARCH
 
 FROM $ARCH/alpine:3.12
 

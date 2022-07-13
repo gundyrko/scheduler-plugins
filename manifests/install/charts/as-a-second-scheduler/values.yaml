@@ -5,19 +5,19 @@
 
 scheduler:
   name: scheduler-plugins-scheduler
-  image: localhost:5002/kube-scheduler:latest
+  image: localhost:5001/kube-scheduler:latest
   namespace: scheduler-plugins
   replicaCount: 1
 
 controller:
   name: scheduler-plugins-controller
-  image: localhost:5002/controller:latest
+  image: localhost:5001/controller:latest
   namespace: scheduler-plugins
   replicaCount: 1
 
 appedge:
   name: scheduler-plugins-appedge
-  image: localhost:5002/appedge:latest
+  image: localhost:5001/appedge:latest
   namespace: scheduler-plugins
   replicaCount: 2
 
